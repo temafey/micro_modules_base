@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MicroModule\Base\Domain\Command;
+namespace MicroModule\Base\Application\Command;
 
 use MicroModule\Base\Domain\ValueObject\Payload;
 use MicroModule\Base\Domain\ValueObject\ProcessUuid;

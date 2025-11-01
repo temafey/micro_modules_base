@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace MicroModule\Base\Domain\Factory;
+namespace MicroModule\Base\Application\Factory;
 
-use MicroModule\Base\Domain\Command\CommandInterface;
-use MicroModule\Base\Domain\Dto\DtoInterface;
+use MicroModule\Base\Application\Command\CommandInterface;
+use MicroModule\Base\Application\Dto\DtoInterface;
 
 interface CommandFactoryInterface
 {

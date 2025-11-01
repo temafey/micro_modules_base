@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MicroModule\Base\Application\Factory;
 
-use MicroModule\Base\Domain\Dto\DtoInterface;
+use MicroModule\Base\Application\Dto\DtoInterface;
 
 interface DtoFactoryInterface
 {

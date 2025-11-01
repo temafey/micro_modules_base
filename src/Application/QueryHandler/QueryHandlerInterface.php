@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MicroModule\Base\Application\QueryHandler;
 
-use MicroModule\Base\Domain\Query\QueryInterface;
+use MicroModule\Base\Application\Query\QueryInterface;
 
 interface QueryHandlerInterface
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MicroModule\Base\Application\CommandHandler;
 
-use MicroModule\Base\Domain\Command\CommandInterface;
+use MicroModule\Base\Application\Command\CommandInterface;
 
 interface CommandHandlerInterface
 {

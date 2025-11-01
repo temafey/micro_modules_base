@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MicroModule\Base\Domain\Query;
+namespace MicroModule\Base\Application\Query;
 
 use MicroModule\Base\Domain\ValueObject\ProcessUuid;
 
