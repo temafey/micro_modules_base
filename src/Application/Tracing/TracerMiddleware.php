@@ -7,88 +7,130 @@ namespace MicroModule\Base\Application\Tracing;
 use League\Tactician\Handler\Locator\HandlerLocator;
 use League\Tactician\Handler\MethodNameInflector\MethodNameInflector;
 use League\Tactician\Middleware;
-use OpenTracing\Scope;
+use OpenTelemetry\API\Trace\SpanInterface;
+use OpenTelemetry\Context\ScopeInterface;
 use Throwable;
 
 /**
- * Class TracerMiddleware, CommandBus middleware.
+ * TracerMiddleware - Command Bus tracing middleware using OpenTelemetry.
+ *
+ * Wraps command execution with distributed tracing spans.
+ * Each command handler execution is captured as a span with:
+ * - Command class name as attribute
+ * - Handler method as span name
+ * - Exception details on failure
+ *
+ * Migrated from OpenTracing to OpenTelemetry API.
  */
 class TracerMiddleware implements Middleware
 {
     use TracingTrait;
 
-    protected HandlerLocator $handlerLocator;
-
-    protected MethodNameInflector $methodNameInflector;
-
     /**
-     * Constructor.
+     * Constructor with PHP 8 property promotion.
      */
     public function __construct(
-        HandlerLocator $handlerLocator,
-        MethodNameInflector $methodNameInflector
+        protected readonly HandlerLocator $handlerLocator,
+        protected readonly MethodNameInflector $methodNameInflector,
     ) {
-        $this->handlerLocator = $handlerLocator;
-        $this->methodNameInflector = $methodNameInflector;
     }
 
     /**
-     * Executes a command and optionally returns a value.
+     * Executes a command with distributed tracing.
      *
-     * @param object $command
+     * @param object $command The command to execute
+     * @param callable $next The next middleware in the chain
      *
-     * @return mixed
+     * @return mixed The command result
      *
-     * @psalm-suppress PossiblyNullReference
+     * @throws Throwable Re-throws any exception after recording it
      */
     public function execute($command, callable $next)
     {
-        $scope = $this->startTrace($command);
+        $traceContext = $this->startTrace($command);
+
+        if ($traceContext === null) {
+            // Tracing disabled, just execute
+            return $next($command);
+        }
+
+        [$span, $scope] = $traceContext;
 
         try {
             $returnValue = $next($command);
+            $this->setTraceStatusOk($span);
         } catch (Throwable $e) {
-            if ($scope) {
-                $this->tracingHelper
-                    ->addTag($scope, 'command_failed', $command::class)
-                    ->addLog($scope, 'message', $e->getMessage())
-                    ->addLog($scope, 'trace', $e->getTraceAsString());
-                $this->finishTraceSpan($scope);
-            }
+            $this->handleTraceException($span, $command, $e);
+            $this->finishTraceSpan($span, $scope);
 
             throw $e;
         }
-        $this->finishTraceSpan($scope);
+
+        $this->finishTraceSpan($span, $scope);
 
         return $returnValue;
     }
 
     /**
-     * Start tracing.
+     * Start tracing for the command execution.
      *
-     * @param object $command
+     * @param object $command The command being executed
+     *
+     * @return array{SpanInterface, ScopeInterface}|null Span and scope pair, or null if tracing disabled
      */
-    protected function startTrace($command): ?Scope
+    protected function startTrace(object $command): ?array
     {
-        if ($this->tracingHelper === null || $this->tracer === null) {
+        if ($this->tracingHelper === null || $this->tracer === null || !$this->isTracingEnabled) {
             return null;
         }
+
         $handler = $this->handlerLocator->getHandlerForCommand($command::class);
         $methodName = $this->methodNameInflector->inflect($command, $handler);
-        $scope = $this->startTracingActiveSpan(
+
+        $traceContext = $this->startTracingActiveSpan(
             sprintf('%s_%s', $this->tracingHelper->getShortClassName($handler::class), $methodName),
             [
                 TracingHelperInterface::KEY_OPTIONS_ADD_CLASSNAME_TO_OPERATION => false,
             ]
         );
+
+        if ($traceContext === null) {
+            return null;
+        }
+
+        [$span, $scope] = $traceContext;
+
+        // Add component and command attributes
         $this->tracingHelper
-            ->addTag(
-                $scope,
+            ->setAttribute(
+                $span,
                 TracingHelperInterface::KEY_COMPONENT_TAG,
                 TracingHelperInterface::KEY_COMPONENT_COMMAND_BUS
             )
-            ->addTag($scope, TracingHelperInterface::KEY_COMMAND_TAG, $command::class);
+            ->setAttribute($span, TracingHelperInterface::KEY_COMMAND_TAG, $command::class);
 
-        return $scope;
+        return [$span, $scope];
+    }
+
+    /**
+     * Handle exception during command execution.
+     *
+     * Records the exception on the span with relevant attributes.
+     *
+     * @param SpanInterface $span The active span
+     * @param object $command The command that failed
+     * @param Throwable $exception The exception thrown
+     */
+    protected function handleTraceException(SpanInterface $span, object $command, Throwable $exception): void
+    {
+        $this->recordTraceException($span, $exception);
+
+        $this->tracingHelper?->setAttribute($span, 'command.failed', $command::class);
+        $this->tracingHelper?->addEvent($span, 'command.error', [
+            'message' => $exception->getMessage(),
+            'code' => $exception->getCode(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+        ]);
     }
 }

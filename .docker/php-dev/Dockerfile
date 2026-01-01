@@ -1,10 +1,11 @@
-FROM php:8.0-cli-alpine
+FROM php:8.4-cli-alpine
 
 RUN apk update
 RUN apk add --no-cache bash
 RUN apk add --no-cache build-base
 RUN apk add --no-cache autoconf
 RUN apk add --no-cache automake
+RUN apk add --no-cache linux-headers
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_MEMORY_LIMIT -1

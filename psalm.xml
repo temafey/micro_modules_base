@@ -1,54 +1,38 @@
 <?xml version="1.0"?>
 <psalm
-    totallyTyped="false"
+    errorLevel="4"
+    resolveFromConfigFile="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
-    xsi:schemaLocation="https://getpsalm.org/schema/config file:///app/vendor/vimeo/psalm/config.xsd"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="false"
 >
     <projectFiles>
-        <directory name="src" />
+        <directory name="src"/>
         <ignoreFiles>
-            <directory name="vendor" />
-            <file name="tests/unit/Infrastructure/Factory/RedisFactory.php" />
-            <file name="tests/unit/Infrastructure/Repository/RedisInMemory.php" />
+            <directory name="vendor"/>
         </ignoreFiles>
     </projectFiles>
 
     <issueHandlers>
-        <LessSpecificReturnType errorLevel="info" />
+        <!-- Allow mixed for Tactician command bus interface compatibility -->
+        <MixedAssignment errorLevel="suppress"/>
+        <MixedArgument errorLevel="suppress"/>
+        <MixedInferredReturnType errorLevel="suppress"/>
+        <MixedReturnStatement errorLevel="suppress"/>
 
-        <!-- level 3 issues - slightly lazy code writing, but provably low false-negatives -->
+        <!-- Deprecated items tracked separately -->
+        <DeprecatedMethod errorLevel="info"/>
+        <DeprecatedProperty errorLevel="info"/>
+        <DeprecatedClass errorLevel="info"/>
+        <DeprecatedConstant errorLevel="info"/>
+        <DeprecatedInterface errorLevel="info"/>
+        <DeprecatedTrait errorLevel="info"/>
 
-        <DeprecatedMethod errorLevel="info" />
-        <DeprecatedProperty errorLevel="info" />
-        <DeprecatedClass errorLevel="info" />
-        <DeprecatedConstant errorLevel="info" />
-        <DeprecatedInterface errorLevel="info" />
-        <DeprecatedTrait errorLevel="info" />
-
-        <InternalMethod errorLevel="info" />
-        <InternalProperty errorLevel="info" />
-        <InternalClass errorLevel="info" />
-
-        <MissingClosureReturnType errorLevel="info" />
-        <MissingReturnType errorLevel="info" />
-        <MissingPropertyType errorLevel="info" />
-        <InvalidDocblock errorLevel="info" />
-
-        <PropertyNotSetInConstructor errorLevel="info" />
-        <MissingConstructor errorLevel="info" />
-        <MissingClosureParamType errorLevel="info" />
-        <MissingParamType errorLevel="info" />
-
-        <RedundantCondition errorLevel="info" />
-
-        <DocblockTypeContradiction errorLevel="info" />
-        <RedundantConditionGivenDocblockType errorLevel="info" />
-
-        <UnresolvableInclude errorLevel="info" />
-
-        <RawObjectIteration errorLevel="info" />
-
-        <InvalidStringClass errorLevel="info" />
+        <!-- Internal items from dependencies -->
+        <InternalMethod errorLevel="info"/>
+        <InternalProperty errorLevel="info"/>
+        <InternalClass errorLevel="info"/>
     </issueHandlers>
 </psalm>
