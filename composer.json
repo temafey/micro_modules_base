@@ -13,6 +13,15 @@
         "psr/log": "^1.1 || ^2.0 || ^3.0",
         "ramsey/uuid": "^4.0"
     },
+    "suggest": {
+        "symfony/cache": "Required for AbstractCachedRepository and CacheStampedeHelper",
+        "ext-msgpack": "Required for MsgPackMarshaller (binary serialization)",
+        "ext-redis": "Required for RedisNonceStore",
+        "predis/predis": "Alternative Redis client for RedisNonceStore",
+        "league/tactician": "Required for SignedMessageMiddleware",
+        "doctrine/orm": "Required for WorkerResetSubscriber (EntityManager reset)",
+        "doctrine/persistence": "Required for WorkerResetSubscriber (ManagerRegistry)"
+    },
     "require-dev": {
         "league/tactician": "^1.2",
         "mockery/mockery": "^1.6",
@@ -27,8 +36,11 @@
         "phpstan/phpstan-phpunit": "^2.0",
         "phpunit/phpunit": "^10.0 || ^11.0",
         "roave/security-advisories": "dev-latest",
-        "symfony/event-dispatcher": "^7.0",
-        "symfony/http-kernel": "^7.0",
+        "doctrine/orm": "^3.0",
+        "doctrine/persistence": "^3.0 || ^4.0",
+        "symfony/cache": "^7.0 || ^8.0",
+        "symfony/event-dispatcher": "^7.0 || ^8.0",
+        "symfony/http-kernel": "^7.0 || ^8.0",
         "symplify/easy-coding-standard": "^12.0",
         "vimeo/psalm": "^5.0 || ^6.0"
     },
