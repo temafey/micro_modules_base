@@ -2,6 +2,6 @@ includes:
 	- vendor/phpstan/phpstan-mockery/extension.neon
 
 parameters:
-	excludes_analyse:
+	excludePaths:
 	    - tests/unit/Infrastructure/Repository/RedisInMemory.php
 	    - tests/unit/Infrastructure/Factory/RedisFactory.php
